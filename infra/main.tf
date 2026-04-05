@@ -1,8 +1,8 @@
 provider "aws" {
   region = var.aws_region
-  access_key = "" # Tu aws_access_key_id
-  secret_key = "" # Tu aws_secret_access_key
-  token      = "" # Tu aws_session_token
+  access_key = ""  
+  secret_key = ""  
+  token      = ""  
 }
 
 data "aws_ami" "amazon_linux" {
@@ -14,7 +14,6 @@ data "aws_ami" "amazon_linux" {
   }
 }
 
-# --- SECURITY GROUPS (Mínimo Privilegio) ---
 resource "aws_security_group" "sg_frontend" {
   name   = "frontend-sg"
   vpc_id = aws_vpc.main_vpc.id
@@ -72,7 +71,6 @@ resource "aws_security_group" "sg_data" {
   }
 }
 
-# --- LAUNCH TEMPLATE ---
 resource "aws_launch_template" "lt_innovatech" {
   name_prefix   = "lt-innovatech-"
   image_id      = data.aws_ami.amazon_linux.id
@@ -80,7 +78,7 @@ resource "aws_launch_template" "lt_innovatech" {
   key_name      = var.key_name
 
   iam_instance_profile {
-    name = "LabInstanceProfile" # Usamos el perfil obligatorio de AWS Academy
+    name = "LabInstanceProfile"
   }
 
   user_data = base64encode(<<-EOF
@@ -96,7 +94,6 @@ resource "aws_launch_template" "lt_innovatech" {
   )
 }
 
-# --- INSTANCIAS EC2 ---
 resource "aws_instance" "frontend" {
   launch_template {
     id      = aws_launch_template.lt_innovatech.id

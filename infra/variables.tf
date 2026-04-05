@@ -24,7 +24,7 @@ variable "instance_type" {
 }
 
 variable "key_name" {
-  description = "Nombre de la llave SSH (Asegúrate de que exista en tu AWS)"
+  description = "Nombre de la llave SSH"
   type        = string
-  default     = "vockey" # Nombre por defecto en AWS Academy
+  default     = "vockey"
 }
