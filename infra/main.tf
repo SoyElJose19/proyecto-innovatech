@@ -1,5 +1,5 @@
 provider "aws" {
-  region = var.aws_region
+  region     = var.aws_region
   access_key = ""  
   secret_key = ""  
   token      = ""  
@@ -24,6 +24,12 @@ resource "aws_security_group" "sg_frontend" {
     protocol    = "tcp"
     cidr_blocks = ["0.0.0.0/0"]
   }
+  ingress {
+    from_port   = 22
+    to_port     = 22
+    protocol    = "tcp"
+    cidr_blocks = [var.admin_ip] 
+  }
 
   egress {
     from_port   = 0
@@ -44,6 +50,13 @@ resource "aws_security_group" "sg_backend" {
     security_groups = [aws_security_group.sg_frontend.id]
   }
 
+  ingress {
+    from_port       = 22
+    to_port         = 22
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_frontend.id]
+  }
+
   egress {
     from_port   = 0
     to_port     = 0
@@ -59,6 +72,13 @@ resource "aws_security_group" "sg_data" {
   ingress {
     from_port       = 3306
     to_port         = 3306
+    protocol        = "tcp"
+    security_groups = [aws_security_group.sg_backend.id]
+  }
+
+  ingress {
+    from_port       = 22
+    to_port         = 22
     protocol        = "tcp"
     security_groups = [aws_security_group.sg_backend.id]
   }
@@ -83,13 +103,20 @@ resource "aws_launch_template" "lt_innovatech" {
 
   user_data = base64encode(<<-EOF
               #!/bin/bash
+              until curl -s --head http://www.google.com | head -n 1 | grep "200 OK" > /dev/null; do
+                echo "Esperando conexión a internet..."
+                sleep 5
+              done
               yum update -y
-              yum install -y git docker mariadb105-server
+              yum install -y git docker mariadb105-server nmap-ncat
               systemctl start docker
               systemctl enable docker
+              
               systemctl start mariadb
               systemctl enable mariadb
+              
               usermod -aG docker ec2-user
+              mysql -e "CREATE DATABASE IF NOT EXISTS innovatechdb;"
               EOF
   )
 }

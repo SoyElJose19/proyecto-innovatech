@@ -28,3 +28,8 @@ variable "key_name" {
   type        = string
   default     = "vockey"
 }
+
+variable "admin_ip" {
+  description = "IP del administrador para acceso SSH"
+  default     = "0.0.0.0/0" 
+}
